@@ -86,8 +86,8 @@ failed_hansik <- result_hansik$failed
 # --------------------------------------------------------
 # 8. Save Data (.csv)
 # --------------------------------------------------------
-write_csv(all_k_culture_data, "C:/Users/nicol/OneDrive/Desktop/Univ/Out-campus activities/인사이트/2025-7/k_culture_gtrend_IE.csv")
-write_csv(all_hansik_data, "C:/Users/nicol/OneDrive/Desktop/Univ/Out-campus activities/인사이트/2025-7/hansik_gtrend_IE.csv")
+write_csv(all_k_culture_data, "repository path/k_culture_gtrend_IE.csv")
+write_csv(all_hansik_data, "repository path/hansik_gtrend_IE.csv")
 
 # --------------------------------------------------------
 # 9. Sum/aggregate by 2-year intervals
@@ -104,7 +104,7 @@ library(stringr)
 # 9 - 2. Define Country Codes and File Path Pattern
 # --------------------------------------------------------
 geo_list <- c("US", "GB", "CA", "AU", "NZ", "IE")
-base_dir <- "C:/Users/nicol/OneDrive/Desktop/Univ/Out-campus activities/인사이트/2025-7"
+base_dir <- "repository path"
 
 # --------------------------------------------------------
 # 9 - 3. Helper: 2-Year Interval Label Function
