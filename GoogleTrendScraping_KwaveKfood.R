@@ -1,23 +1,16 @@
-# --------------------------------------------------------
 # 1. Install and Load Required Packages
-# --------------------------------------------------------
-install.packages(c("httr", "jsonlite", "dplyr", "stringr", "writexl"))
+install.packages(c("httr", "jsonlite", "dplyr", "stringr", "writexl", "purrr", "gtrendsR", "tidyverse"))
+
 library(httr)
 library(jsonlite)
 library(dplyr)
 library(stringr)
 library(writexl)
-install.packages("purrr")
 library(purrr)
-
-if (!require("gtrendsR")) install.packages("gtrendsR")
-if (!require("tidyverse")) install.packages("tidyverse")
 library(gtrendsR)
 library(tidyverse)
 
-# --------------------------------------------------------
 # 2. Define Keywords Lists(k_culture, hansik)
-# --------------------------------------------------------
 k_culture <- c(
   "K-pop", "BTS", "Blackpink", "Twice", "Enhyphen", "Stray Kids", "aespa", "Seventeen", "Psy", "Bigbang", "GD", "IU", "2NE1",
   "K-drama", "When Life Gives You Tangerines", "Squid Game", "The Glory", "Crash Landing on You", "Itaewon Class", "Extraordinary Attorney Woo",
@@ -30,30 +23,22 @@ hansik <- c(
   "soju", "makgeolli", "samgyetang", "kimchi stew", "pajeon", "mandu", "yangnyeom chicken", "Korean restaurant"
 )
 
-# --------------------------------------------------------
 # 3. Set Analysis Parameters
-# --------------------------------------------------------
 geo <- "IE"   # Country code (US, GB, CA, AU, NZ, IE)
 time_span <- "2015-01-01 2025-07-25" 
 gprop <- "web" # Search property: "web", "news", or "youtube"
 
-# --------------------------------------------------------
 # 4. Split Keywords into Groups of 5 (API limitation)
-# --------------------------------------------------------
 split_keywords <- function(keywords) split(keywords, ceiling(seq_along(keywords)/5))
 k_culture_list <- split_keywords(k_culture)
 hansik_list <- split_keywords(hansik)
 
-# --------------------------------------------------------
 # 5. Define Function to Retrieve Google Trends Data
-# --------------------------------------------------------
 get_trends <- function(keyword_group, geo, time_span, gprop) {
   gtrends(keyword = keyword_group, geo = geo, time = time_span, gprop = gprop)$interest_over_time
 }
 
-# --------------------------------------------------------
 # 6. Retrieve Data for All Keyword Groups (tryCatch)
-# --------------------------------------------------------
 fetch_gtrends <- function(kw_list, label = "keyword") {
   all_data <- tibble()
   failed_groups <- c()
@@ -72,9 +57,7 @@ fetch_gtrends <- function(kw_list, label = "keyword") {
   list(data = all_data, failed = failed_groups)
 }
 
-# --------------------------------------------------------
 # 7. Collect Data for K-culture and Hansik Keywords
-# --------------------------------------------------------
 result_k_culture <- fetch_gtrends(k_culture_list, "K-culture")
 all_k_culture_data <- result_k_culture$data
 failed_k_culture <- result_k_culture$failed
@@ -83,41 +66,26 @@ result_hansik <- fetch_gtrends(hansik_list, "Hansik")
 all_hansik_data <- result_hansik$data
 failed_hansik <- result_hansik$failed
 
-# --------------------------------------------------------
 # 8. Save Data (.csv)
-# --------------------------------------------------------
 write_csv(all_k_culture_data, "repository path/k_culture_gtrend_IE.csv")
 write_csv(all_hansik_data, "repository path/hansik_gtrend_IE.csv")
 
-# --------------------------------------------------------
 # 9. Sum/aggregate by 2-year intervals
-# --------------------------------------------------------
-
-# --------------------------------------------------------
 # 9 - 1. Load Required Packages
-# --------------------------------------------------------
-library(dplyr)
 library(readr)
-library(stringr)
 
-# --------------------------------------------------------
 # 9 - 2. Define Country Codes and File Path Pattern
-# --------------------------------------------------------
 geo_list <- c("US", "GB", "CA", "AU", "NZ", "IE")
-base_dir <- "repository path"
+base_dir <- "Insert Repository Path"
 
-# --------------------------------------------------------
 # 9 - 3. Helper: 2-Year Interval Label Function
-# --------------------------------------------------------
 get_2yr_interval <- function(date_col) {
   year <- as.numeric(format(as.Date(date_col), "%Y"))
   interval <- paste0(year - (year %% 2), "-", year - (year %% 2) + 1)
   return(interval)
 }
 
-# --------------------------------------------------------
-# 9 - 4. Main Loop: Load, Process, Save All Countries (No manual file path input needed)
-# --------------------------------------------------------
+# 9 - 4. Main Loop: Load, Process, Save All Countries
 for (geo in geo_list) {
   # Auto-create file paths
   kfile <- file.path(base_dir, sprintf("k_culture_gtrend_%s.csv", geo))
