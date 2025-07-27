@@ -1,16 +1,13 @@
-# ==========================================================
-# Guardian Hansik News Preprocessing & Full Analysis Pipeline
 # 1. Preprocessing (clean, stopwords, QA)
 # 2. Sentiment, trend, KWIC, wordcloud, regression
-# ==========================================================
 
-# --- 0. Install & Load Packages ---
+# 0. Install & Load Packages
 pkgs <- c("readxl", "dplyr", "stringr", "lubridate", "tidytext", "syuzhet",
           "textdata", "ggplot2", "reshape2", "wordcloud", "writexl", "quanteda")
 for (pkg in pkgs) if (!require(pkg, character.only = TRUE)) install.packages(pkg)
 lapply(pkgs, library, character.only = TRUE)
 
-# --- 1. Load Data & Stopwords ---
+# 1. Load Data & Stopwords
 save_dir <- "insert your repository location"
 csv_file <- file.path(save_dir, "guardian_hansik_articles_unique.csv")
 stopwords_file <- file.path(save_dir, "English_Stopwords.xlsx")
@@ -19,7 +16,7 @@ articles <- read.csv(csv_file, stringsAsFactors = FALSE)
 stopwords_en <- read_excel(stopwords_file, col_names = FALSE)[[1]]
 stopwords_en <- tolower(trimws(stopwords_en))
 
-# --- 2. Preprocessing & Cleaning ---
+# 2. Preprocessing & Cleaning
 articles <- articles %>%
   filter(!is.na(pub_date) & !is.na(title) & !is.na(matched_keywords) & !is.na(body_text))
 articles$pub_date <- as.Date(articles$pub_date)
@@ -46,14 +43,14 @@ articles$title_nostop <- sapply(articles$title, remove_stopwords, stopwords = st
 cleaned_file <- file.path(save_dir, "guardian_hansik_articles_cleaned.csv")
 write.csv(articles, cleaned_file, row.names = FALSE)
 
-# --- 3. Assign 2-Year Intervals for Aggregation ---
+# 3. Assign 2-Year Intervals for Aggregation
 articles$interval_2yr <- paste0(
   2 * ((year(articles$pub_date) - 2015) %/% 2) + 2015, "-",
   2 * ((year(articles$pub_date) - 2015) %/% 2) + 2016
 )
 articles$interval_2yr[year(articles$pub_date) >= 2025] <- "2025-2025"
 
-# --- 4. Sentiment Analysis (Syuzhet, Bing, Afinn) ---
+# 4. Sentiment Analysis (Syuzhet, Bing, Afinn)
 articles$sentiment_syuzhet <- get_sentiment(articles$body_text, method = "syuzhet")
 bing_lex <- get_sentiments("bing")
 afinn_lex <- get_sentiments("afinn")
@@ -67,7 +64,7 @@ articles$sentiment_afinn <- sapply(articles$body_text, function(text) {
   sum(afinn_lex$value[match(words, afinn_lex$word)], na.rm = TRUE)
 })
 
-# --- 5. Long Format for Per-Keyword Analysis ---
+# 5. Long Format for Per-Keyword Analysis
 if (!require("tidyr")) install.packages("tidyr")
 library(tidyr)
 
@@ -76,7 +73,7 @@ articles_long <- articles %>%
   mutate(keyword = strsplit(as.character(matched_keywords), ",\\s*")) %>%
   unnest(keyword)
 
-# --- 6. Aggregation: 2-Year and Per-Keyword ---
+# 6. Aggregation: 2-Year and Per-Keyword
 sentiment_summary <- articles %>%
   group_by(interval_2yr) %>%
   summarise(
@@ -93,7 +90,7 @@ sentiment_by_kw <- articles_long %>%
     .groups = 'drop'
   )
 
-# --- 7. Time Series & Trend Visualization ---
+# 7. Time Series & Trend Visualization
 ggplot(sentiment_summary, aes(x = interval_2yr, y = article_count)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(title = "Articles per 2-Year Interval", x = "Interval", y = "Count") + theme_minimal()
@@ -106,17 +103,17 @@ heatmap_data <- sentiment_by_kw %>%
   acast(keyword ~ interval_2yr, value.var = "mean_syuzhet", fill = NA)
 heatmap(heatmap_data, Rowv = NA, Colv = NA, col = topo.colors(10), scale = "column")
 
-# --- 8. Outlier Detection (Peaks) ---
+# 8. Outlier Detection (Peaks)
 max_interval <- sentiment_summary$interval_2yr[which.max(sentiment_summary$mean_syuzhet)]
 min_interval <- sentiment_summary$interval_2yr[which.min(sentiment_summary$mean_syuzhet)]
 cat(sprintf("Highest Sentiment Interval: %s\nLowest Sentiment Interval: %s\n", max_interval, min_interval))
 
-# --- 9. Correlation and Regression ---
+# 9. Correlation and Regression
 cor_stats <- sentiment_summary
 lm_model <- lm(mean_syuzhet ~ article_count, data = cor_stats)
 summary(lm_model)
 
-# --- 10. Keyword Sentiment Distribution (Boxplot) ---
+# 10. Keyword Sentiment Distribution(Boxplot)
 top_keywords <- articles_long %>% count(keyword, sort = TRUE) %>% top_n(5, n) %>% pull(keyword)
 articles_long %>%
   filter(keyword %in% top_keywords) %>%
@@ -125,8 +122,7 @@ articles_long %>%
   labs(title = "Sentiment Distribution by Top Keywords", x = "Keyword", y = "Sentiment") +
   theme_minimal()
 
-# --- 11. KWIC: KeyWord in Context Extraction ---
-
+# 11. KWIC
 all_keywords <- articles$matched_keywords %>%
   paste(collapse = ",") %>%        
   str_split(",\\s*") %>%            
@@ -152,7 +148,7 @@ for (kw in all_keywords) {
 
 getwd()
 
-# --- 12. Wordcloud Visualization ---
+# 12. Wordcloud Visualization
 words <- articles %>%
   unnest_tokens(word, body_text) %>%
   anti_join(data.frame(word = stopwords("en")), by = "word") %>%
