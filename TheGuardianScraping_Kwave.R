@@ -1,14 +1,13 @@
-# ----------------------------------------------------------
 # 1. Install and Load Required Packages
-# ----------------------------------------------------------
-if (!require("httr")) install.packages("httr")
-if (!require("jsonlite")) install.packages("jsonlite")
-if (!require("dplyr")) install.packages("dplyr")
-if (!require("stringr")) install.packages("stringr")
-if (!require("writexl")) install.packages("writexl")
-if (!require("lubridate")) install.packages("lubridate")
-if (!require("tidyr")) install.packages("tidyr")
-if (!require("readr")) install.packages("readr")
+
+install.packages("httr")
+install.packages("jsonlite")
+install.packages("dplyr")
+install.packages("stringr")
+install.packages("writexl")
+install.packages("lubridate")
+install.packages("tidyr")
+install.packages("readr")
 
 library(httr)
 library(jsonlite)
@@ -19,15 +18,11 @@ library(lubridate)
 library(tidyr)
 library(readr)
 
-# ----------------------------------------------------------
 # 2. Set Guardian API Key
-# ----------------------------------------------------------
-guardian_api_key <- "Individual The Guardian API Key" 
+guardian_api_key <- "Insert Individual The Guardian API Key" 
 Sys.setenv(GUARDIAN_API_KEY = guardian_api_key)
 
-# ----------------------------------------------------------
 # 3. Define Hansik Keywords (same as Google Trends)
-# ----------------------------------------------------------
 hansik_keywords <- c(
   "kimchi", "bulgogi", "tteokbokki", "K-food", "Korean food", "Korean fried chicken", "buldak",
   "bibimbap", "gochujang", "dakgalbi", "kimbap", "korean cuisine", "korean street food",
@@ -36,9 +31,7 @@ hansik_keywords <- c(
   "Korean restaurant", "Seoul food", "ramyeon"
 )
 
-# ----------------------------------------------------------
-# 4. Define Guardian API Fetch Function (Full BodyText)
-# ----------------------------------------------------------
+# 4. Define Guardian API Fetch Function (Full BodyText)-
 fetch_guardian_articles <- function(keyword, from_date = "2015-01-01", to_date = "2025-07-25", page_size = 50, max_pages = 10) {
   url <- "https://content.guardianapis.com/search"
   all_results <- list()
@@ -64,9 +57,7 @@ fetch_guardian_articles <- function(keyword, from_date = "2015-01-01", to_date =
   return(df)
 }
 
-# ----------------------------------------------------------
 # 5. Article Scraping Loop (All Keywords, Full BodyText)
-# ----------------------------------------------------------
 all_articles <- data.frame(
   source = character(),
   title = character(),
@@ -105,19 +96,15 @@ for (keyword in hansik_keywords) {
   Sys.sleep(10) 
 }
 
-# ----------------------------------------------------------
 # 6. Remove Duplicate Articles (URL)
-# ----------------------------------------------------------
 all_articles_unique <- all_articles %>%
   distinct(link, .keep_all = TRUE)
 
 cat("Articles before deduplication:", nrow(all_articles), "\n")
 cat("Articles after deduplication:", nrow(all_articles_unique), "\n")
 
-# ----------------------------------------------------------
 # 7. Save Final Dataset (.xlsx, .csv) to Custom Directory
-# ----------------------------------------------------------
-save_dir <- "C:/Users/nicol/OneDrive/Desktop/Univ/Out-campus activities/인사이트/2025-7"
+save_dir <- "Insert Repository Location"
 if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE)
 xlsx_file <- file.path(save_dir, "guardian_hansik_articles_unique.xlsx")
 csv_file  <- file.path(save_dir, "guardian_hansik_articles_unique.csv")
@@ -125,10 +112,7 @@ csv_file  <- file.path(save_dir, "guardian_hansik_articles_unique.csv")
 write.csv(all_articles_unique, csv_file, row.names = FALSE)
 cat(sprintf("Saved: %s\n", csv_file))
 
-
-# ----------------------------------------------------------
 # 8. Aggregate by 2-Year Interval
-# ----------------------------------------------------------
 # Re-load (for safety)
 guardian_articles <- read_csv(csv_file, show_col_types = FALSE)
 
