@@ -9,7 +9,7 @@ from tqdm.notebook import tqdm
 from google.colab import files
 import io
 
-# 3. Upload your CSV metadata file
+# 3. Upload metadata file(.csv)
 print("Upload your GDELT metadata CSV file.")
 uploaded = files.upload()
 filename = next(iter(uploaded))
@@ -41,10 +41,9 @@ for url in tqdm(df['url'], desc="Scraping article bodies"):
 df['body_text'] = body_texts
 print(df[['title', 'body_text']].head())
 
-# 6. Save as CSV and download
+# 6. Save and download (.csv)
 output_filename = "gdelt_anglosphere_articles_with_body.csv"
 df.to_csv(output_filename, index=False, encoding='utf-8-sig')
 print(f"File saved: {output_filename}")
 
-# 7. Trigger download in Colab
 files.download(output_filename)
