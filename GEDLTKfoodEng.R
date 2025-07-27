@@ -20,7 +20,7 @@ keywords <- c(
 date_start <- as.Date("2015-01-01")
 date_end <- as.Date("2025-07-25")
 intervals <- seq(year(date_start), year(date_end), by = 2)
-max_sample_per_kw_interval <- 20
+max_sample_per_kw_interval <- 50
 
 # 3. Helper: Download GDELT Exporter Metadata by Keyword & Interval
 get_gdelt_sample <- function(keyword, from_date, to_date, n_max = 20) {
@@ -58,9 +58,13 @@ for (kw in keywords) {
   }
 }
 gdelt_all <- bind_rows(results)
+print(table(gdelt_all$sourcecountry))
+print(table(toupper(trimws(gdelt_all$sourcecountry))))
 
-# 5. Filter for Anglosphere countries & English articles ONLY
-anglosphere <- c("US", "GB", "CA", "AU", "NZ", "IE")
+
+# 5. Filter (Anglo-American countries only)
+anglosphere <- c("United States", "United Kingdom", "Canada", "Australia", "New Zealand", "Ireland")
+
 gdelt_out <- gdelt_all %>%
   transmute(
     keyword,
@@ -68,17 +72,17 @@ gdelt_out <- gdelt_all %>%
     pub_date = as.Date(substr(seendate, 1, 8), "%Y%m%d"),
     title,
     url,
-    country = sourcecountry,
-    lang = language
+    country = trimws(sourcecountry),
+    lang = tolower(language)
   ) %>%
   filter(country %in% anglosphere) %>%
-  filter(tolower(lang) == "english") %>%
+  filter(lang == "english") %>%
   filter(!is.na(title) & !is.na(url)) %>%
   distinct(url, title, .keep_all = TRUE)
 
 # 6. Save (.csv)
-save_dir <- "Insert Repository Path"
-csv_out <- file.path(save_dir, "gdelt_hansik_anglosphere_sampled.csv")
+save_dir <- "C:/Users/nicol/OneDrive/Desktop/Univ/Out-campus activities/인사이트/2025-7"
+csv_out <- file.path(save_dir, "gdelt_hansik_anglosphere_only.csv")
 write.csv(gdelt_out, csv_out, row.names = FALSE)
 cat("Saved:", csv_out, "\n")
 
