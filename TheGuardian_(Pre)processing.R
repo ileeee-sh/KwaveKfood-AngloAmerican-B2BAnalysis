@@ -37,7 +37,7 @@ remove_stopwords <- function(text, stopwords) {
   paste(filtered, collapse = " ")
 }
 articles$title_nostop <- sapply(articles$title, remove_stopwords, stopwords = stopwords_en)
-# articles$body_text_nostop <- sapply(articles$body_text, remove_stopwords, stopwords = stopwords_en) # optional
+articles$body_text_nostop <- sapply(articles$body_text, remove_stopwords, stopwords = stopwords_en)
 
 # Save cleaned data for reproducibility
 cleaned_file <- file.path(save_dir, "guardian_hansik_articles_cleaned.csv")
