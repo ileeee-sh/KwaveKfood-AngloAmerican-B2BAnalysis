@@ -66,7 +66,7 @@ result_hansik <- fetch_gtrends(hansik_list, "Hansik")
 all_hansik_data <- result_hansik$data
 failed_hansik <- result_hansik$failed
 
-# 8. Save Data (.csv)
+# 8. Save (.csv)
 write_csv(all_k_culture_data, "repository path/k_culture_gtrend_IE.csv")
 write_csv(all_hansik_data, "repository path/hansik_gtrend_IE.csv")
 
@@ -125,7 +125,7 @@ for (geo in geo_list) {
       .groups = "drop"
     )
   
-  # Save(Automated)
+  # Save(.csv)
   write_csv(k2yr, file.path(base_dir, sprintf("k_culture_gtrend_%s_2yr.csv", geo)))
   write_csv(h2yr, file.path(base_dir, sprintf("hansik_gtrend_%s_2yr.csv", geo)))
   
