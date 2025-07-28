@@ -89,7 +89,11 @@ sentiment_by_kw <- articles_long %>%
     count = n(),
     .groups = 'drop'
   )
+sentiment_summary_file <- file.path(save_dir, "guardian_sentiment_summary_2yr.csv")
+write.csv(sentiment_summary, sentiment_summary_file, row.names = FALSE)
+cat("Saved:", sentiment_summary_file, "\n")
 
+# From now on, these are the codes just for testing, optional
 # 7. Time Series & Trend Visualization
 ggplot(sentiment_summary, aes(x = interval_2yr, y = article_count)) +
   geom_bar(stat = "identity", fill = "steelblue") +
