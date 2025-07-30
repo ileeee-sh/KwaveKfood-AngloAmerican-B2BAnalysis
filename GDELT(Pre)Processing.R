@@ -6,7 +6,7 @@ lapply(pkgs, library, character.only = TRUE)
 
 # 1. Load Data & Stopwords
 save_dir <- "Insert Repository Location"
-csv_file <- file.path(save_dir, "gdelt_anglosphere_articles_with_body.csv") 
+csv_file <- file.path(save_dir, "gdelt_anglosphere_articles_with_body.csv")
 stopwords_file <- file.path(save_dir, "English_Stopwords.xlsx")
 
 articles <- read.csv(csv_file, stringsAsFactors = FALSE)
@@ -15,7 +15,7 @@ stopwords_en <- tolower(trimws(stopwords_en))
 
 # 2. Preprocessing & Cleaning
 articles <- articles %>%
-  filter(!is.na(pub_date) & !is.na(title) & !is.na(keyword) & !is.na(body_text))
+  filter(!is.na(pub_date) & !is.na(title) & !is.na(keyword) & !is.na(body_text) & !is.na(country))
 articles$pub_date <- as.Date(articles$pub_date)
 
 # Clean text
@@ -69,15 +69,16 @@ articles_long <- articles %>%
 
 # 6. Aggregation: 2-Year and Per-Keyword
 sentiment_summary <- articles %>%
-  group_by(interval_2yr) %>%
+  group_by(country, interval_2yr) %>%
   summarise(
     article_count = n(),
     mean_syuzhet = mean(sentiment_syuzhet, na.rm = TRUE),
     mean_bing = mean(sentiment_bing, na.rm = TRUE),
-    mean_afinn = mean(sentiment_afinn, na.rm = TRUE)
+    mean_afinn = mean(sentiment_afinn, na.rm = TRUE),
+    .groups = "drop"
   )
 sentiment_by_kw <- articles_long %>%
-  group_by(interval_2yr, keyword) %>%
+  group_by(country, interval_2yr, keyword) %>%
   summarise(
     mean_syuzhet = mean(sentiment_syuzhet, na.rm = TRUE),
     count = n(),
@@ -87,6 +88,7 @@ sentiment_by_kw <- articles_long %>%
 sentiment_summary_file <- file.path(save_dir, "gdelt_sentiment_summary_2yr.csv")
 write.csv(sentiment_summary, sentiment_summary_file, row.names = FALSE)
 cat("Saved:", sentiment_summary_file, "\n")
+
 
 # From now on, the codes are just for testing. Optional.
 # 7. Time Series & Trend Visualization
